@@ -82,7 +82,7 @@ public class EvoChargeProperties {
     }
 
     public static class Bedrock {
-        private String modelId = "anthropic.claude-3-haiku-20240307-v1:0";
+        private String modelId = "anthropic.claude-haiku-4-5-20251001-v1:0";
         private boolean enabled;
 
         public String getModelId() {
