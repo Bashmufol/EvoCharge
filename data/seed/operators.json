@@ -1,0 +1,23 @@
+[
+  {
+    "id": "op-evnetwork",
+    "name": "EVNetwork NG",
+    "logoUrl": "/operators/evnetwork.svg",
+    "stationCount": 15,
+    "coverage": "Lagos, Abuja, Port Harcourt"
+  },
+  {
+    "id": "op-chargepro",
+    "name": "ChargePro Africa",
+    "logoUrl": "/operators/chargepro.svg",
+    "stationCount": 15,
+    "coverage": "Lagos, Abuja, Port Harcourt"
+  },
+  {
+    "id": "op-voltlane",
+    "name": "VoltLane",
+    "logoUrl": "/operators/voltlane.svg",
+    "stationCount": 14,
+    "coverage": "Lagos, Abuja, Port Harcourt"
+  }
+]

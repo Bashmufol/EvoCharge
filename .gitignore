@@ -1,0 +1,32 @@
+# Build
+target/
+dist/
+build/
+*.class
+*.jar
+!**/src/main/**
+
+# Node
+node_modules/
+.npm
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Env
+.env
+.env.local
+
+# CDK
+infra/cdk/cdk.out/
+infra/cdk/target/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+docs

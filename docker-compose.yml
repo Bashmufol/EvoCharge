@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      EVOCHARGE_SEED_PATH: /app/data/seed
+    volumes:
+      - ./data/seed:/app/data/seed:ro
