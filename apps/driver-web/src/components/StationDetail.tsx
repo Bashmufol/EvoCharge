@@ -19,9 +19,9 @@ export function StationDetail({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-          className="absolute inset-x-0 bottom-16 z-20 mx-3 rounded-2xl border border-white/10 bg-ev-surface/95 p-5 shadow-2xl backdrop-blur-md"
+          className="absolute inset-x-0 bottom-16 z-20 mx-3 rounded-2xl border border-white/10 bg-ev-surface/95 p-4 shadow-2xl backdrop-blur-md sm:p-5 md:inset-x-auto md:right-4 md:bottom-4 md:mx-0 md:w-[420px]"
         >
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex gap-4">
               <EvoScoreRing score={station.evoScore || station.reliabilityScore} />
               <div>
@@ -42,7 +42,7 @@ export function StationDetail({
             {station.address}
           </p>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
             <div className="rounded-lg bg-ev-card p-3">
               <div className="flex items-center gap-1 text-xs text-slate-400">
                 <Zap className="h-3.5 w-3.5" /> Power

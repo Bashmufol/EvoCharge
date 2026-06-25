@@ -1,104 +1,102 @@
-# EvoCharge
+# EvoCharge API
 
-**Nigeria's EV Charging Intelligence Layer** — built for the [ONE WITH AI Hackathon](https://arthuriteintegrated.com) by Arthurite Integrated (Problem Statement #1).
+REST API and AWS infrastructure for EvoCharge, a charging intelligence platform for Nigeria. The service aggregates station data from multiple operators into one normalized schema, exposes discovery and analytics endpoints, ranks stations with EvoScore, streams live status updates, and powers a natural-language charging advisor through Amazon Bedrock.
 
-EvoCharge aggregates charging station data from multiple operators into a single cloud-native platform. EV drivers discover stations, get EvoScore recommendations, and chat with an AI Charge Advisor powered by Amazon Bedrock. Operators and policymakers access utilization analytics and unmet demand insights.
+## Overview
 
-## Live Demo
+EvoCharge sits between operator data sources and client applications. It stores operators and stations in DynamoDB (production) or local seed files (development), serves a versioned HTTP API, and runs on AWS using infrastructure defined in CDK.
 
-| Surface | URL |
-|---------|-----|
-| Driver app | https://d8061ggv2y910.cloudfront.net/ |
-| Operator dashboard | https://d8061ggv2y910.cloudfront.net/operator/ |
-| API health | https://d8061ggv2y910.cloudfront.net/api/v1/health |
+Seed data includes 44 stations across Lagos, Abuja, and Port Harcourt, representing three operator profiles: EVNetwork NG, ChargePro Africa, and VoltLane.
 
-All three run on a **single CloudFront distribution**. The driver header links to the operator dashboard; the operator sidebar links back to the driver app.
+## API Capabilities
 
-## Features
+| Area | Description |
+|------|-------------|
+| Operators and stations | List, filter, search, and fetch station detail by city, operator, status, and connector |
+| Nearby search | Find stations within a radius of a latitude and longitude |
+| EvoScore | Rank stations by distance, availability, wait time, reliability, and connector match |
+| Network Pulse | Server-sent events for live status changes; scheduled pulse via EventBridge and Lambda |
+| Analytics | Network summary KPIs and demand-by-area aggregates |
+| AI advisor | Natural-language queries answered with Amazon Bedrock (Claude Haiku 4.5) plus ranked stations |
+| Health | Liveness endpoint for load balancer checks |
 
-- **Multi-city coverage** — Lagos (primary), Abuja, and Port Harcourt with city filter
-- **Multi-operator aggregation** — EVNetwork NG, ChargePro Africa, and VoltLane in one API
-- **Interactive map** — MapLibre + Amazon Location Service with live status pins
-- **EvoScore recommendations** — weighted scoring: distance, availability, wait, reliability, connector
-- **Network Pulse** — real-time status updates via SSE + EventBridge + Lambda
-- **Demand heatmap** — underserved area overlay for investors and policymakers
-- **AI Charge Advisor** — Amazon Bedrock (Claude Haiku 4.5) natural-language station search
-- **Operator dashboard** — KPIs, charts, station table, demand analytics
-- **Cross-app navigation** — switch between driver and operator views from one domain
+Full endpoint reference: [docs/api-contract.md](docs/api-contract.md).
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Backend | Java 21, Spring Boot 4.0.6 |
-| Driver app | React 19, TypeScript, Tailwind CSS v4, Framer Motion, MapLibre |
-| Operator dashboard | React 19, TypeScript, Tailwind CSS v4, Recharts |
+| API | Java 21, Spring Boot 4.0.6 |
 | Infrastructure | AWS CDK (Java) |
-| Cloud | ECS Fargate, ALB, ECR, DynamoDB, S3, CloudFront, EventBridge, Lambda, Bedrock, Location Service, CloudWatch |
+| Compute | Amazon ECS on Fargate, Application Load Balancer |
+| Data | Amazon DynamoDB, Amazon S3 (seed and data files) |
+| AI | Amazon Bedrock |
+| Events | Amazon EventBridge, AWS Lambda |
+| Networking | Amazon VPC, NAT Gateway |
+| Registry and logs | Amazon ECR, Amazon CloudWatch Logs |
+| Edge (optional) | Amazon CloudFront (API path proxy via Web stack) |
 
 ## Project Structure
 
 ```
 EvoCharge/
-├── apps/driver-web/          # Driver-facing web app
-├── apps/operator-dashboard/  # Operator analytics dashboard
-├── backend/api/              # Spring Boot REST API
-├── infra/cdk/                # AWS CDK infrastructure (4 stacks)
-├── data/seed/                # 44 stations across Lagos, Abuja, Port Harcourt
-├── scripts/                  # Deployment helpers
-└── docs/                     # API contract, SOW, architecture, check-in scripts
+├── backend/api/       # Spring Boot application
+├── infra/cdk/         # AWS CDK stacks
+├── data/seed/         # Operator and station seed JSON
+├── scripts/           # API deployment helpers
+└── docs/              # API contract and architecture notes
 ```
 
-## Quick Start (Local)
+## Local Development
 
 ### Prerequisites
 
-- Java 21, Maven 3.9+
-- Node.js 20+
-- (Optional) Docker
+- Java 21
+- Maven 3.9+
+- Docker (optional)
 
-### 1. Start the API
+### Run with Maven
 
 ```bash
 cd backend/api
 mvn spring-boot:run
 ```
 
-API runs at `http://localhost:8080`. Seed data loads automatically from `data/seed/`.
+The API listens on `http://localhost:8080`. Seed data loads from `data/seed/` on startup.
 
-### 2. Start the Driver App
+### Run with Docker
 
-```bash
-cd apps/driver-web
-cp .env.example .env
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173`
-
-### 3. Start the Operator Dashboard
-
-```bash
-cd apps/operator-dashboard
-cp .env.example .env
-npm install
-npm run dev
-```
-
-Open `http://localhost:5174`
-
-### Docker (API only)
-
-From the repo root:
+From the repository root:
 
 ```bash
 docker compose up --build
 ```
 
-## AWS Deployment
+### Configuration
 
-Infrastructure is defined in four CDK stacks: **Network**, **Data**, **Api**, and **Web**.
+Key settings in `backend/api/src/main/resources/application.properties`:
+
+| Property | Default (local) |
+|----------|-----------------|
+| `evocharge.storage` | `local` |
+| `evocharge.seed-path` | `../../../data/seed` |
+| `evocharge.bedrock.model-id` | `anthropic.claude-haiku-4-5-20251001-v1:0` |
+| `evocharge.bedrock.enabled` | `true` |
+
+Production uses the `aws` Spring profile (`application-aws.properties`) with DynamoDB table names and settings supplied by ECS environment variables.
+
+## AWS Infrastructure
+
+Infrastructure is split into four CDK stacks:
+
+| Stack | Purpose |
+|-------|---------|
+| `EvoCharge-Network` | VPC, public and private subnets across two AZs, NAT Gateway |
+| `EvoCharge-Data` | DynamoDB tables (`EvoCharge-Operators`, `EvoCharge-Stations`), S3 data bucket |
+| `EvoCharge-Api` | ECR repository, ECS Fargate service, ALB, EventBridge rule, Lambda pulse function, CloudWatch log group |
+| `EvoCharge-Web` | CloudFront distribution and S3 bucket for edge delivery (includes `/api/*` proxy to the ALB) |
+
+### Deploy infrastructure
 
 ```bash
 cd infra/cdk
@@ -106,84 +104,75 @@ mvn package
 cdk deploy --all
 ```
 
-Hackathon tags (`aws-apn-id`, `event`) are applied automatically via CDK. The Gen AI partner tag is set on the Api stack (Bedrock).
+Note the `ApiUrl` output from the Api stack (ALB DNS name). Health check path: `/api/v1/health`.
 
-### Deploy the API (Docker + ECR + ECS)
+### Deploy the API container
 
-The CDK Api stack creates the ECR repository and ECS service. After the first `cdk deploy`, build and push the real API image:
+After CDK creates the ECR repository and ECS service, build and push the application image:
 
-**PowerShell (repo root):**
+**PowerShell (repository root):**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\deploy-api.ps1
 ```
 
-Or manually:
+**Manual steps:**
 
 ```powershell
 docker build -f backend/api/Dockerfile -t evocharge-api:latest .
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+
+aws ecr get-login-password --region us-east-1 `
+  | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+
 docker tag evocharge-api:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/evocharge-api:latest
 docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/evocharge-api:latest
 ```
 
-Then create a new ECS task definition revision pointing at the ECR image and **Update service** with **Force new deployment**.
+Register a new ECS task definition revision with the pushed image, then update the service with **Force new deployment**.
 
-Bedrock model (configured in `application.properties` and ECS env):
+Environment variables set by CDK on the Api stack:
 
-`anthropic.claude-haiku-4-5-20251001-v1:0`
+| Variable | Purpose |
+|----------|---------|
+| `SPRING_PROFILES_ACTIVE` | `aws` |
+| `EVOCHARGE_STORAGE` | `dynamodb` |
+| `EVOCHARGE_DYNAMODB_OPERATORS_TABLE` | Operators table name |
+| `EVOCHARGE_DYNAMODB_STATIONS_TABLE` | Stations table name |
+| `EVOCHARGE_BEDROCK_ENABLED` | `true` |
+| `EVOCHARGE_BEDROCK_MODEL_ID` | `anthropic.claude-haiku-4-5-20251001-v1:0` |
 
-### Deploy the Frontends (single CloudFront URL)
+### IAM permissions (task role)
 
-Get `WebBucketName` and `WebUrl` from CDK outputs after deploying `EvoCharge-Web`.
+The ECS task role grants access to:
 
-**PowerShell:**
+- Read/write on the DynamoDB operator and station tables
+- Read on the S3 data bucket
+- `bedrock:InvokeModel`
+- Amazon Location Service actions used by the API
 
-```powershell
-$env:VITE_API_URL = "https://<your-cloudfront-domain>"
+## API Base URLs
 
-cd apps/driver-web
-npm run build
-aws s3 sync dist/ s3://<WebBucketName>/ --delete --exclude "operator/*"
+| Environment | Base URL |
+|-------------|----------|
+| Local | `http://localhost:8080/api/v1` |
+| Production (ALB) | `http://<alb-dns-name>/api/v1` |
+| Production (CloudFront) | `https://<distribution-domain>/api/v1` |
 
-cd ..\operator-dashboard
-npm run build
-aws s3 sync dist/ s3://<WebBucketName>/operator/ --delete
+Example health check:
 
-aws cloudfront create-invalidation --distribution-id <DistributionId> --paths "/*"
+```bash
+curl https://<your-domain>/api/v1/health
 ```
-
-Set `VITE_API_URL` to your full CloudFront HTTPS URL (not empty). An empty value falls back to `localhost:8080` in production builds.
-
-| Path | App |
-|------|-----|
-| `/` | Driver web app |
-| `/operator/` | Operator dashboard |
-| `/api/*` | Proxied to ALB → ECS Fargate API |
-
-## API Endpoints
-
-See [docs/api-contract.md](docs/api-contract.md).
-
-Production base URL: `https://d8061ggv2y910.cloudfront.net/api/v1`
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [docs/sow.md](docs/sow.md) | Statement of Work (markdown) |
-| [docs/sow.pdf](docs/sow.pdf) | Statement of Work with architecture diagram (submission PDF) |
-| [docs/architecture.md](docs/architecture.md) | Architecture overview and data flow |
-| [docs/api-contract.md](docs/api-contract.md) | REST API contract |
-| [docs/check-in-scripts.md](docs/check-in-scripts.md) | Hackathon progress scripts |
+| [docs/api-contract.md](docs/api-contract.md) | REST API contract and schemas |
+| [docs/architecture.md](docs/architecture.md) | AWS architecture and data flow |
+| [docs/sow.md](docs/sow.md) | Statement of Work |
+| [docs/sow.pdf](docs/sow.pdf) | Statement of Work (PDF) |
 
-## Team
+## License
 
-Built for ONE WITH AI Hackathon — Powering Mobility & EV Ecosystem with AWS.
-
-| Role | Name |
-|------|------|
-| Team lead + cloud engineer | Bashir |
-| Driver app | AbdulSamad |
-| Operator dashboard | Abdullateef |
-| Backend API | Abdulroheem |
+Proprietary. All rights reserved.

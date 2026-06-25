@@ -94,8 +94,8 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-ev-dark">
-      <header className="z-30 border-b border-white/5 bg-ev-surface/90 px-4 py-3 backdrop-blur-md">
+    <div className="flex h-full min-h-dvh flex-col bg-ev-dark">
+      <header className="z-30 border-b border-white/5 bg-ev-surface/90 px-3 py-3 backdrop-blur-md sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-ev-green to-ev-cyan">
@@ -149,7 +149,7 @@ export default function App() {
           </div>
           <button
             onClick={handleNearMe}
-            className="rounded-xl border border-ev-cyan/30 bg-ev-cyan/10 px-3 text-xs font-medium text-ev-cyan"
+            className="shrink-0 rounded-xl border border-ev-cyan/30 bg-ev-cyan/10 px-3 text-xs font-medium text-ev-cyan"
           >
             Near me
           </button>
@@ -218,25 +218,27 @@ export default function App() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto p-4 pb-24"
+              className="absolute inset-0 overflow-y-auto p-3 pb-24 sm:p-4"
             >
-              <RecommendPanel lat={userLat} lng={userLng} onSelect={(id) => {
-                const s = stations.find((st) => st.id === id)
-                if (s) { setSelected(s); setTab('map') }
-              }} />
-              <div className="mt-4 space-y-3">
-                {stations.length === 0 && (
-                  <p className="text-center text-sm text-slate-400">No stations in this city.</p>
-                )}
-                {stations.map((s, i) => (
-                  <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                    <StationCard
-                      station={s}
-                      selected={selected?.id === s.id}
-                      onClick={() => setSelected(s)}
-                    />
-                  </motion.div>
-                ))}
+              <div className="mx-auto w-full max-w-5xl">
+                <RecommendPanel lat={userLat} lng={userLng} onSelect={(id) => {
+                  const s = stations.find((st) => st.id === id)
+                  if (s) { setSelected(s); setTab('map') }
+                }} />
+                <div className="mt-4 space-y-3">
+                  {stations.length === 0 && (
+                    <p className="text-center text-sm text-slate-400">No stations in this city.</p>
+                  )}
+                  {stations.map((s, i) => (
+                    <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                      <StationCard
+                        station={s}
+                        selected={selected?.id === s.id}
+                        onClick={() => setSelected(s)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
@@ -247,9 +249,11 @@ export default function App() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 overflow-y-auto p-4 pb-24"
+              className="absolute inset-0 overflow-y-auto p-3 pb-24 sm:p-4"
             >
-              <AdvisorChat lat={userLat} lng={userLng} />
+              <div className="mx-auto w-full max-w-3xl">
+                <AdvisorChat lat={userLat} lng={userLng} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

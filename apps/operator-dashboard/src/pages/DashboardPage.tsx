@@ -28,7 +28,7 @@ export function DashboardPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Network Overview</h1>
+        <h1 className="text-xl font-bold text-white sm:text-2xl">Network Overview</h1>
         <p className="text-sm text-slate-400">Multi-operator charging intelligence across Lagos</p>
       </div>
 

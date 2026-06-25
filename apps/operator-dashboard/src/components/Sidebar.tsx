@@ -11,7 +11,7 @@ export function Sidebar({ page, onPage }: { page: Page; onPage: (p: Page) => voi
   ]
 
   return (
-    <aside className="flex w-56 flex-col border-r border-white/5 bg-ev-surface p-4">
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-white/5 bg-ev-surface p-4 md:flex">
       <div className="mb-8 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-ev-green to-ev-cyan">
           <Zap className="h-5 w-5 text-ev-dark" />

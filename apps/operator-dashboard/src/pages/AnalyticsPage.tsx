@@ -19,7 +19,7 @@ export function AnalyticsPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Demand Analytics</h1>
+        <h1 className="text-xl font-bold text-white sm:text-2xl">Demand Analytics</h1>
         <p className="text-sm text-slate-400">Insights for operators, investors, and policymakers</p>
       </div>
 

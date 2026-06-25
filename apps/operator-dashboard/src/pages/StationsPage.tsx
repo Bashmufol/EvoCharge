@@ -29,21 +29,22 @@ export function StationsPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h1 className="text-2xl font-bold text-white">Station Management</h1>
+      <h1 className="text-xl font-bold text-white sm:text-2xl">Station Management</h1>
       <p className="mb-6 text-sm text-slate-400">Live status across all aggregated operators</p>
 
       <div className="overflow-hidden rounded-2xl border border-white/5 bg-ev-card">
-        <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto">
+        <table className="min-w-[880px] w-full text-left text-sm">
           <thead className="border-b border-white/5 bg-ev-surface text-xs text-slate-400">
             <tr>
               <th className="px-4 py-3">Station</th>
               <th className="px-4 py-3">Operator</th>
               <th className="px-4 py-3">City</th>
-              <th className="px-4 py-3">Area</th>
+              <th className="px-4 py-3 hidden md:table-cell">Area</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Wait</th>
-              <th className="px-4 py-3">Reliability</th>
-              <th className="px-4 py-3">Updated</th>
+              <th className="px-4 py-3 hidden lg:table-cell">Reliability</th>
+              <th className="px-4 py-3 hidden lg:table-cell">Updated</th>
             </tr>
           </thead>
           <tbody>
@@ -55,15 +56,15 @@ export function StationsPage() {
                   <td className="px-4 py-3 font-medium">{s.name}</td>
                   <td className="px-4 py-3 text-slate-400">{s.operatorName}</td>
                   <td className="px-4 py-3 text-slate-400">{s.city}</td>
-                  <td className="px-4 py-3 text-slate-400">{s.area}</td>
+                  <td className="px-4 py-3 text-slate-400 hidden md:table-cell">{s.area}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[s.status]}`}>
                       {s.status}
                     </span>
                   </td>
                   <td className="px-4 py-3">{s.waitMinutes}m</td>
-                  <td className="px-4 py-3">{s.reliabilityScore}%</td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-4 py-3 hidden lg:table-cell">{s.reliabilityScore}%</td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
                     {new Date(s.lastUpdated).toLocaleTimeString()}
                   </td>
                 </tr>
@@ -71,6 +72,7 @@ export function StationsPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </motion.div>
   )
