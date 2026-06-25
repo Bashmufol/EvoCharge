@@ -6,7 +6,6 @@ import { api } from './api/client'
 import { AdvisorChat } from './components/AdvisorChat'
 import { MapView } from './components/MapView'
 import { RecommendPanel } from './components/RecommendPanel'
-import { StationCard } from './components/StationCard'
 import { StationDetail } from './components/StationDetail'
 import { CITIES, CITY_CENTERS, DEFAULT_CITY, type CityFilter } from './constants/cities'
 import { OPERATOR_APP_URL } from './constants/navigation'
@@ -25,18 +24,36 @@ export default function App() {
   const [showHeat, setShowHeat] = useState(false)
   const [userLocation, setUserLocation] = useState<[number, number] | undefined>()
   const [mapCenter, setMapCenter] = useState<[number, number]>(CITY_CENTERS[DEFAULT_CITY])
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
 
   useNetworkPulse()
 
   const { data: stations = [], isLoading } = useQuery({
-    queryKey: ['stations', statusFilter, operatorFilter, search, cityFilter],
-    queryFn: () =>
-      api.getStations({
+    queryKey: userLocation
+      ? ['stations', 'nearby', userLocation[0], userLocation[1], statusFilter, operatorFilter, search]
+      : ['stations', statusFilter, operatorFilter, search, cityFilter],
+    queryFn: async () => {
+      if (userLocation) {
+        const nearby = await api.getNearby(userLocation[1], userLocation[0], 25)
+        return nearby.filter((s) => {
+          if (statusFilter && s.status !== statusFilter) return false
+          if (operatorFilter && s.operatorId !== operatorFilter) return false
+          if (search) {
+            const q = search.toLowerCase()
+            const hay = `${s.name} ${s.area} ${s.city} ${s.address}`.toLowerCase()
+            if (!hay.includes(q)) return false
+          }
+          return true
+        })
+      }
+      return api.getStations({
         status: statusFilter || undefined,
         operator: operatorFilter || undefined,
         search: search || undefined,
         city: cityFilter || undefined,
-      }),
+      })
+    },
     refetchInterval: 60_000,
   })
 
@@ -69,16 +86,37 @@ export default function App() {
     total: stations.length,
   }), [stations])
 
+  const recommendFilterKey = `${cityFilter}|${statusFilter}|${operatorFilter}|${search}`
+
   const handleNearMe = () => {
-    navigator.geolocation?.getCurrentPosition(
+    if (!navigator.geolocation) {
+      setLocationError('Location is not supported in this browser.')
+      return
+    }
+
+    setLocating(true)
+    setLocationError(null)
+    setTab('map')
+
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLocation([pos.coords.longitude, pos.coords.latitude])
-        setMapCenter([pos.coords.longitude, pos.coords.latitude])
+        const lng = pos.coords.longitude
+        const lat = pos.coords.latitude
+        setLocating(false)
+        setCityFilter('')
+        setUserLocation([lng, lat])
+        setMapCenter([lng, lat])
       },
-      () => {
+      (err) => {
+        setLocating(false)
         setUserLocation(undefined)
-        setMapCenter(activeCenter)
-      }
+        setLocationError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location permission denied. Allow access in your browser settings and try again.'
+            : 'Could not get your location. Check that location services are enabled.'
+        )
+      },
+      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 0 }
     )
   }
 
@@ -86,6 +124,7 @@ export default function App() {
     setCityFilter(city)
     setSelected(null)
     setUserLocation(undefined)
+    setLocationError(null)
     if (city && CITY_CENTERS[city]) {
       setMapCenter(CITY_CENTERS[city])
     } else {
@@ -149,11 +188,22 @@ export default function App() {
           </div>
           <button
             onClick={handleNearMe}
-            className="shrink-0 rounded-xl border border-ev-cyan/30 bg-ev-cyan/10 px-3 text-xs font-medium text-ev-cyan"
+            disabled={locating}
+            className="shrink-0 rounded-xl border border-ev-cyan/30 bg-ev-cyan/10 px-3 text-xs font-medium text-ev-cyan disabled:opacity-50"
           >
-            Near me
+            {locating ? 'Locating...' : 'Near me'}
           </button>
         </div>
+        {locationError && (
+          <p className="mt-1.5 text-xs text-ev-red">{locationError}</p>
+        )}
+        {userLocation && !locationError && (
+          <p className="mt-1.5 text-xs text-ev-cyan">
+            {stations.length > 0
+              ? 'Showing chargers near your location'
+              : 'No chargers within 25 km — pick a city above to browse the network'}
+          </p>
+        )}
 
         <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
           {(['', 'AVAILABLE', 'BUSY', 'OFFLINE'] as const).map((s) => (
@@ -206,6 +256,7 @@ export default function App() {
                   demandAreas={demandAreas}
                   showHeat={showHeat}
                   center={mapCenter}
+                  userLocation={userLocation}
                 />
               )}
               <StationDetail station={selected} onClose={() => setSelected(null)} />
@@ -221,24 +272,15 @@ export default function App() {
               className="absolute inset-0 overflow-y-auto p-3 pb-24 sm:p-4"
             >
               <div className="mx-auto w-full max-w-5xl">
-                <RecommendPanel lat={userLat} lng={userLng} onSelect={(id) => {
-                  const s = stations.find((st) => st.id === id)
-                  if (s) { setSelected(s); setTab('map') }
-                }} />
-                <div className="mt-4 space-y-3">
-                  {stations.length === 0 && (
-                    <p className="text-center text-sm text-slate-400">No stations in this city.</p>
-                  )}
-                  {stations.map((s, i) => (
-                    <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                      <StationCard
-                        station={s}
-                        selected={selected?.id === s.id}
-                        onClick={() => setSelected(s)}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
+                <RecommendPanel
+                  lat={userLat}
+                  lng={userLng}
+                  filterKey={recommendFilterKey}
+                  onSelect={(station) => {
+                    setSelected(station)
+                    setTab('map')
+                  }}
+                />
               </div>
             </motion.div>
           )}

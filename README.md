@@ -6,7 +6,7 @@ REST API and AWS infrastructure for EvoCharge, a charging intelligence platform 
 
 EvoCharge sits between operator data sources and client applications. It stores operators and stations in DynamoDB (production) or local seed files (development), serves a versioned HTTP API, and runs on AWS using infrastructure defined in CDK.
 
-Seed data includes 44 stations across Lagos, Abuja, and Port Harcourt, representing three operator profiles: EVNetwork NG, ChargePro Africa, and VoltLane.
+Seed data includes 48 stations across Lagos, Abuja, and Port Harcourt, representing three operator profiles: EVNetwork NG, ChargePro Africa, and VoltLane.
 
 ## API Capabilities
 
@@ -17,7 +17,7 @@ Seed data includes 44 stations across Lagos, Abuja, and Port Harcourt, represent
 | EvoScore | Rank stations by distance, availability, wait time, reliability, and connector match |
 | Network Pulse | Server-sent events for live status changes; scheduled pulse via EventBridge and Lambda |
 | Analytics | Network summary KPIs and demand-by-area aggregates |
-| AI advisor | Natural-language queries answered with Amazon Bedrock (Claude Haiku 4.5) plus ranked stations |
+| AI advisor | Natural-language queries via Bedrock, with Mistral API fallback and template fallback |
 | Health | Liveness endpoint for load balancer checks |
 
 Full endpoint reference: [docs/api-contract.md](docs/api-contract.md).
@@ -82,6 +82,9 @@ Key settings in `backend/api/src/main/resources/application.properties`:
 | `evocharge.seed-path` | `../../../data/seed` |
 | `evocharge.bedrock.model-id` | `anthropic.claude-haiku-4-5-20251001-v1:0` |
 | `evocharge.bedrock.enabled` | `true` |
+| `evocharge.mistral.enabled` | `true` |
+| `evocharge.mistral.api-key` | Set via `MISTRAL_API_KEY` locally or `EVOCHARGE_MISTRAL_API_KEY` on ECS |
+| `evocharge.seed.resync-on-startup` | `false` (set `EVOCHARGE_SEED_RESYNC=true` once to reload seed data) |
 
 Production uses the `aws` Spring profile (`application-aws.properties`) with DynamoDB table names and settings supplied by ECS environment variables.
 
@@ -140,6 +143,9 @@ Environment variables set by CDK on the Api stack:
 | `EVOCHARGE_DYNAMODB_STATIONS_TABLE` | Stations table name |
 | `EVOCHARGE_BEDROCK_ENABLED` | `true` |
 | `EVOCHARGE_BEDROCK_MODEL_ID` | `anthropic.claude-haiku-4-5-20251001-v1:0` |
+| `EVOCHARGE_MISTRAL_ENABLED` | `true` |
+| `EVOCHARGE_MISTRAL_API_KEY` | Your Mistral API key (set in ECS task definition or Secrets Manager) |
+| `EVOCHARGE_SEED_RESYNC` | `true` for one deployment to reload updated seed stations |
 
 ### IAM permissions (task role)
 

@@ -43,7 +43,8 @@ public class DataSeeder {
 
     @PostConstruct
     public void seed() {
-        if (!stationRepository.findAll().isEmpty()) {
+        boolean empty = stationRepository.findAll().isEmpty();
+        if (!empty && !properties.getSeed().isResyncOnStartup()) {
             return;
         }
         try {
@@ -53,7 +54,11 @@ public class DataSeeder {
 
             operatorRepository.saveAll(operators);
             stationRepository.saveAll(stations);
-            log.info("Seeded {} operators and {} stations from {}", operators.size(), stations.size(), seedPath);
+            if (empty) {
+                log.info("Seeded {} operators and {} stations from {}", operators.size(), stations.size(), seedPath);
+            } else {
+                log.info("Resynced {} operators and {} stations from {}", operators.size(), stations.size(), seedPath);
+            }
         } catch (IOException e) {
             log.error("Failed to seed data: {}", e.getMessage());
         }

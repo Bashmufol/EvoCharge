@@ -25,6 +25,7 @@ export function MapView({
   demandAreas,
   showHeat,
   center,
+  userLocation,
 }: {
   stations: Station[]
   selectedId?: string
@@ -32,10 +33,16 @@ export function MapView({
   demandAreas?: DemandArea[]
   showHeat?: boolean
   center?: [number, number]
+  userLocation?: [number, number]
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null)
+
+  const flyToCenter = (map: maplibregl.Map, target: [number, number]) => {
+    map.flyTo({ center: target, zoom: 13, duration: 1200 })
+  }
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -63,7 +70,13 @@ export function MapView({
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
     mapRef.current = map
 
+    map.once('load', () => {
+      if (center) flyToCenter(map, center)
+    })
+
     return () => {
+      userMarkerRef.current?.remove()
+      userMarkerRef.current = null
       markersRef.current.forEach((m) => m.remove())
       markersRef.current.clear()
       map.remove()
@@ -153,10 +166,40 @@ export function MapView({
   }, [showHeat, demandAreas])
 
   useEffect(() => {
-    if (center && mapRef.current) {
-      mapRef.current.flyTo({ center, zoom: 13, duration: 1200 })
+    const map = mapRef.current
+    if (!map || !center) return
+
+    if (map.isStyleLoaded()) {
+      flyToCenter(map, center)
+    } else {
+      map.once('load', () => flyToCenter(map, center))
     }
   }, [center])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    if (!userLocation) {
+      userMarkerRef.current?.remove()
+      userMarkerRef.current = null
+      return
+    }
+
+    const el = document.createElement('div')
+    el.innerHTML = `<div style="
+      width:14px;height:14px;background:#00b8d4;border:3px solid white;border-radius:50%;
+      box-shadow:0 0 12px #00b8d4;
+    "></div>`
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat(userLocation)
+    } else {
+      userMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(userLocation)
+        .addTo(map)
+    }
+  }, [userLocation])
 
   return <div ref={containerRef} className="h-full w-full" />
 }

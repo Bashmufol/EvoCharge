@@ -59,7 +59,8 @@ public class ApiStack extends Stack {
                                         "EVOCHARGE_DYNAMODB_OPERATORS_TABLE", data.getOperatorsTable().getTableName(),
                                         "EVOCHARGE_DYNAMODB_STATIONS_TABLE", data.getStationsTable().getTableName(),
                                         "EVOCHARGE_BEDROCK_ENABLED", "true",
-                                        "EVOCHARGE_BEDROCK_MODEL_ID", "anthropic.claude-haiku-4-5-20251001-v1:0"
+                                        "EVOCHARGE_BEDROCK_MODEL_ID", "anthropic.claude-haiku-4-5-20251001-v1:0",
+                                        "EVOCHARGE_MISTRAL_ENABLED", "true"
                                 ))
                                 .logDriver(LogDrivers.awsLogs(
                                         software.amazon.awscdk.services.ecs.AwsLogDriverProps.builder()

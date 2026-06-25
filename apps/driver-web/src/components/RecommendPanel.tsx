@@ -1,24 +1,31 @@
 import { motion } from 'framer-motion'
 import { Battery, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { api } from '../api/client'
-import type { RankedStation } from '../types'
+import type { RankedStation, Station } from '../types'
 import { EvoScoreRing } from './EvoScoreRing'
 import { StatusBadge } from './StatusBadge'
 
 export function RecommendPanel({
   lat,
   lng,
+  filterKey,
   onSelect,
 }: {
   lat: number
   lng: number
-  onSelect: (id: string) => void
+  /** Changes when header filters change — clears stale recommendation results. */
+  filterKey: string
+  onSelect: (station: Station) => void
 }) {
   const [battery, setBattery] = useState(35)
   const [connector, setConnector] = useState('CCS2')
   const [results, setResults] = useState<RankedStation[]>([])
+
+  useEffect(() => {
+    setResults([])
+  }, [filterKey, lat, lng])
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -36,6 +43,9 @@ export function RecommendPanel({
         <Sparkles className="h-5 w-5 text-ev-green" />
         <h3 className="font-semibold text-white">EvoScore Recommendations</h3>
       </div>
+      <p className="mt-2 text-xs text-slate-400">
+        Use the filters above, then tap Find Best Charger to rank nearby stations. Browse all stations on the Map tab.
+      </p>
 
       <div className="mt-4 space-y-3">
         <div>
@@ -74,13 +84,14 @@ export function RecommendPanel({
 
       {results.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 space-y-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-ev-green">Your top picks</p>
           {results.map((r, i) => (
             <motion.button
               key={r.station.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              onClick={() => onSelect(r.station.id)}
+              onClick={() => onSelect(r.station)}
               className="flex w-full items-center gap-3 rounded-xl border border-white/5 bg-ev-card p-3 text-left hover:border-ev-green/30"
             >
               <EvoScoreRing score={r.evoScore} size={48} />

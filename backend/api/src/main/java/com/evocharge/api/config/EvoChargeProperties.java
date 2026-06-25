@@ -10,6 +10,8 @@ public class EvoChargeProperties {
     private String corsOrigins = "http://localhost:5173";
     private DynamoDb dynamodb = new DynamoDb();
     private Bedrock bedrock = new Bedrock();
+    private Mistral mistral = new Mistral();
+    private Seed seed = new Seed();
     private Pulse pulse = new Pulse();
 
     public String getStorage() {
@@ -50,6 +52,22 @@ public class EvoChargeProperties {
 
     public void setBedrock(Bedrock bedrock) {
         this.bedrock = bedrock;
+    }
+
+    public Mistral getMistral() {
+        return mistral;
+    }
+
+    public void setMistral(Mistral mistral) {
+        this.mistral = mistral;
+    }
+
+    public Seed getSeed() {
+        return seed;
+    }
+
+    public void setSeed(Seed seed) {
+        this.seed = seed;
     }
 
     public Pulse getPulse() {
@@ -99,6 +117,57 @@ public class EvoChargeProperties {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+    }
+
+    public static class Mistral {
+        private boolean enabled = true;
+        private String apiKey = "";
+        private String model = "mistral-small-latest";
+        private String baseUrl = "https://api.mistral.ai/v1";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(String apiKey) {
+            this.apiKey = apiKey;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
+        }
+
+        public String getBaseUrl() {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+        }
+    }
+
+    public static class Seed {
+        private boolean resyncOnStartup;
+
+        public boolean isResyncOnStartup() {
+            return resyncOnStartup;
+        }
+
+        public void setResyncOnStartup(boolean resyncOnStartup) {
+            this.resyncOnStartup = resyncOnStartup;
         }
     }
 

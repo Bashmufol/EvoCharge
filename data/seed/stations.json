@@ -561,16 +561,16 @@
     "lng": 3.365,
     "address": "Mobolaji Bank Anthony Way",
     "area": "Maryland",
-    "status": "AVAILABLE",
+    "status": "OFFLINE",
     "connectors": [
       "CCS2",
       "Type2"
     ],
     "powerKw": 140,
-    "waitMinutes": 4,
-    "reliabilityScore": 92,
-    "gridStatus": "STABLE",
-    "lastUpdated": "2026-06-06T08:30:00Z",
+    "waitMinutes": 0,
+    "reliabilityScore": 72,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T07:45:00Z",
     "city": "Lagos"
   },
   {
@@ -665,16 +665,16 @@
     "address": "Mohammed Mana St, Garki",
     "city": "Abuja",
     "area": "Garki",
-    "status": "AVAILABLE",
+    "status": "OFFLINE",
     "connectors": [
       "CCS2",
       "Type2"
     ],
     "powerKw": 90,
-    "waitMinutes": 6,
-    "reliabilityScore": 89,
-    "gridStatus": "STABLE",
-    "lastUpdated": "2026-06-06T08:10:00Z"
+    "waitMinutes": 0,
+    "reliabilityScore": 68,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T07:20:00Z"
   },
   {
     "id": "st-034",
@@ -706,15 +706,15 @@
     "address": "3rd Ave, Gwarinpa",
     "city": "Abuja",
     "area": "Gwarinpa",
-    "status": "AVAILABLE",
+    "status": "OFFLINE",
     "connectors": [
       "Type2"
     ],
     "powerKw": 75,
-    "waitMinutes": 3,
-    "reliabilityScore": 86,
-    "gridStatus": "UNSTABLE",
-    "lastUpdated": "2026-06-06T08:20:00Z"
+    "waitMinutes": 0,
+    "reliabilityScore": 65,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T06:50:00Z"
   },
   {
     "id": "st-036",
@@ -900,5 +900,86 @@
     "reliabilityScore": 84,
     "gridStatus": "STABLE",
     "lastUpdated": "2026-06-06T08:25:00Z"
+  },
+  {
+    "id": "st-045",
+    "name": "ChargePro Surulere Depot",
+    "operatorId": "op-chargepro",
+    "operatorName": "ChargePro Africa",
+    "lat": 6.496,
+    "lng": 3.352,
+    "address": "Adeniran Ogunsanya St, Surulere",
+    "city": "Lagos",
+    "area": "Surulere",
+    "status": "OFFLINE",
+    "connectors": [
+      "CCS2"
+    ],
+    "powerKw": 80,
+    "waitMinutes": 0,
+    "reliabilityScore": 71,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T07:10:00Z"
+  },
+  {
+    "id": "st-046",
+    "name": "EVNetwork Kubwa Service Bay",
+    "operatorId": "op-evnetwork",
+    "operatorName": "EVNetwork NG",
+    "lat": 9.142,
+    "lng": 7.395,
+    "address": "Gado Nasko Rd, Kubwa",
+    "city": "Abuja",
+    "area": "Kubwa",
+    "status": "OFFLINE",
+    "connectors": [
+      "Type2"
+    ],
+    "powerKw": 60,
+    "waitMinutes": 0,
+    "reliabilityScore": 69,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T06:40:00Z"
+  },
+  {
+    "id": "st-047",
+    "name": "VoltLane Trans Amadi Hub",
+    "operatorId": "op-voltlane",
+    "operatorName": "VoltLane",
+    "lat": 4.815,
+    "lng": 7.032,
+    "address": "Trans Amadi Industrial Layout",
+    "city": "Port Harcourt",
+    "area": "Trans Amadi",
+    "status": "OFFLINE",
+    "connectors": [
+      "CCS2",
+      "Type2"
+    ],
+    "powerKw": 110,
+    "waitMinutes": 0,
+    "reliabilityScore": 74,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T07:55:00Z"
+  },
+  {
+    "id": "st-048",
+    "name": "ChargePro PHGRA Station",
+    "operatorId": "op-chargepro",
+    "operatorName": "ChargePro Africa",
+    "lat": 4.865,
+    "lng": 6.99,
+    "address": "GRA Phase 2, Port Harcourt",
+    "city": "Port Harcourt",
+    "area": "GRA",
+    "status": "OFFLINE",
+    "connectors": [
+      "CCS2"
+    ],
+    "powerKw": 90,
+    "waitMinutes": 0,
+    "reliabilityScore": 70,
+    "gridStatus": "OUTAGE",
+    "lastUpdated": "2026-06-06T06:30:00Z"
   }
 ]
