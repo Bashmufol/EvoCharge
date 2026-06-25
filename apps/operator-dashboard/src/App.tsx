@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Activity, BarChart3, LayoutDashboard } from 'lucide-react'
 import { useState } from 'react'
 import { Sidebar, type Page } from './components/Sidebar'
+import { DRIVER_APP_URL } from './constants/navigation'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { StationsPage } from './pages/StationsPage'
@@ -23,6 +24,14 @@ function AppContent() {
       <Sidebar page={page} onPage={setPage} />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 border-b border-white/5 bg-ev-surface/95 px-3 py-2 backdrop-blur-md md:hidden">
+          <div className="mb-2 flex items-center justify-end">
+            <a
+              href={DRIVER_APP_URL}
+              className="rounded-full border border-white/10 bg-ev-card px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-ev-green/30 hover:text-ev-green"
+            >
+              Driver App
+            </a>
+          </div>
           <div className="flex gap-1.5 overflow-x-auto pb-0.5">
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
