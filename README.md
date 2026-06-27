@@ -109,6 +109,18 @@ cdk deploy --all
 
 Note the `ApiUrl` output from the Api stack (ALB DNS name). Health check path: `/api/v1/health`.
 
+The Api stack builds the Docker image during `cdk deploy` (requires **Docker Desktop running**). It no longer uses a placeholder JRE image, so ECS health checks pass on first deploy.
+
+**Recommended deploy (avoids CDK Docker build hangs on Windows):**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-cdk-api.ps1 -MistralApiKey "your-key"
+```
+
+This will: update `EvoCharge-Data` (ECR repo) → push API image → deploy `EvoCharge-Api` + `EvoCharge-Web` → roll out ECS env vars → deploy frontends.
+
+If `EvoCharge-Api` is stuck in `CREATE_IN_PROGRESS`, delete that stack in CloudFormation and redeploy after pulling these changes.
+
 ### Deploy the API container
 
 After CDK creates the ECR repository and ECS service, build and push the application image:
@@ -117,9 +129,32 @@ After CDK creates the ECR repository and ECS service, build and push the applica
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\deploy-api.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-api.ps1 -MistralApiKey "your-key" -ResyncSeed
 ```
 
-**Manual steps:**
+### Deploy the frontends
+
+Builds driver + operator apps, syncs to S3, and invalidates CloudFront:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy-web.ps1
+```
+
+### Full reset and redeploy (tear down everything, then rebuild)
+
+**Warning:** destroys CloudFront, ECS, DynamoDB tables, S3 buckets, and VPC. CloudFront deletion can take 15–30 minutes.
+
+```powershell
+# Nuclear option: destroy all stacks, redeploy infra + API + frontends
+powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-all.ps1 -Teardown -MistralApiKey "your-key" -ResyncSeed
+
+# Lighter option: keep Network/Data, redeploy Api + Web + app images (omit -SkipCdk:$false)
+powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-all.ps1 -SkipTeardown -MistralApiKey "your-key"
+```
+
+After seed resync, deploy API again **without** `-ResyncSeed` so restarts do not overwrite DynamoDB.
+
+**Manual API steps:**
 
 ```powershell
 docker build -f backend/api/Dockerfile -t evocharge-api:latest .

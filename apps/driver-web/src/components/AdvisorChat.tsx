@@ -12,12 +12,19 @@ const SUGGESTIONS = [
 
 export function AdvisorChat({ lat, lng }: { lat: number; lng: number }) {
   const [query, setQuery] = useState('')
-  const [answer, setAnswer] = useState<string | null>(null)
 
   const mutation = useMutation({
     mutationFn: (q: string) => api.advise({ query: q, lat, lng }),
-    onSuccess: (data) => setAnswer(data.answer),
   })
+
+  const ask = (q: string) => {
+    const trimmed = q.trim()
+    if (!trimmed || mutation.isPending) return
+    setQuery(trimmed)
+    mutation.mutate(trimmed)
+  }
+
+  const answer = mutation.isSuccess && !mutation.isPending ? mutation.data?.answer : null
 
   return (
     <motion.div
@@ -35,8 +42,9 @@ export function AdvisorChat({ lat, lng }: { lat: number; lng: number }) {
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
-            onClick={() => { setQuery(s); mutation.mutate(s) }}
-            className="rounded-lg border border-white/5 bg-ev-card px-2 py-1 text-left text-[11px] text-slate-300 hover:border-ev-cyan/30"
+            onClick={() => ask(s)}
+            disabled={mutation.isPending}
+            className="rounded-lg border border-white/5 bg-ev-card px-2 py-1 text-left text-[11px] text-slate-300 hover:border-ev-cyan/30 disabled:opacity-50"
           >
             {s}
           </button>
@@ -47,13 +55,13 @@ export function AdvisorChat({ lat, lng }: { lat: number; lng: number }) {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && query && mutation.mutate(query)}
+          onKeyDown={(e) => e.key === 'Enter' && ask(query)}
           placeholder="Ask anything about charging in Lagos..."
           className="flex-1 rounded-xl border border-white/10 bg-ev-card px-3 py-2 text-sm outline-none focus:border-ev-cyan/50"
         />
         <button
-          onClick={() => query && mutation.mutate(query)}
-          disabled={mutation.isPending}
+          onClick={() => ask(query)}
+          disabled={mutation.isPending || !query.trim()}
           className="rounded-xl bg-ev-cyan p-2.5 text-ev-dark hover:opacity-90 disabled:opacity-50"
         >
           <Send className="h-5 w-5" />
@@ -62,6 +70,14 @@ export function AdvisorChat({ lat, lng }: { lat: number; lng: number }) {
 
       {mutation.isPending && (
         <p className="mt-3 animate-pulse text-sm text-slate-400">Advisor is thinking...</p>
+      )}
+
+      {mutation.isError && (
+        <p className="mt-3 rounded-lg border border-ev-red/30 bg-ev-red/10 px-3 py-2 text-sm text-ev-red">
+          {mutation.error instanceof Error
+            ? mutation.error.message
+            : 'Could not reach the advisor. Is the API running?'}
+        </p>
       )}
 
       {answer && (

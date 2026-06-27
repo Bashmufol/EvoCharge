@@ -1,5 +1,5 @@
 {
-  "app": "mvn -e -q exec:java",
+  "app": "mvn -e --no-transfer-progress exec:java",
   "watch": {
     "include": ["**"],
     "exclude": ["README.md", "cdk*.json", "target/**"]

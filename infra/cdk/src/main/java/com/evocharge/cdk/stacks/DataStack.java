@@ -7,6 +7,7 @@ import software.amazon.awscdk.services.dynamodb.Attribute;
 import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.Table;
+import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.constructs.Construct;
@@ -16,6 +17,7 @@ public class DataStack extends Stack {
     private final Table operatorsTable;
     private final Table stationsTable;
     private final Bucket dataBucket;
+    private final Repository apiRepository;
 
     public DataStack(Construct scope, String id, StackProps props) {
         super(scope, id, props);
@@ -40,6 +42,12 @@ public class DataStack extends Stack {
                 .autoDeleteObjects(true)
                 .build();
 
+        apiRepository = Repository.Builder.create(this, "ApiRepository")
+                .repositoryName("evocharge-api")
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .emptyOnDelete(true)
+                .build();
+
         software.amazon.awscdk.CfnOutput.Builder.create(this, "OperatorsTableName")
                 .value(operatorsTable.getTableName())
                 .build();
@@ -48,6 +56,9 @@ public class DataStack extends Stack {
                 .build();
         software.amazon.awscdk.CfnOutput.Builder.create(this, "DataBucketName")
                 .value(dataBucket.getBucketName())
+                .build();
+        software.amazon.awscdk.CfnOutput.Builder.create(this, "EcrRepoUri")
+                .value(apiRepository.getRepositoryUri())
                 .build();
     }
 
@@ -61,5 +72,9 @@ public class DataStack extends Stack {
 
     public Bucket getDataBucket() {
         return dataBucket;
+    }
+
+    public Repository getApiRepository() {
+        return apiRepository;
     }
 }

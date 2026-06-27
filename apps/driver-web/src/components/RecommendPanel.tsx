@@ -3,7 +3,7 @@ import { Battery, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { api } from '../api/client'
-import type { RankedStation, Station } from '../types'
+import type { Station } from '../types'
 import { EvoScoreRing } from './EvoScoreRing'
 import { StatusBadge } from './StatusBadge'
 
@@ -21,17 +21,19 @@ export function RecommendPanel({
 }) {
   const [battery, setBattery] = useState(35)
   const [connector, setConnector] = useState('CCS2')
-  const [results, setResults] = useState<RankedStation[]>([])
-
-  useEffect(() => {
-    setResults([])
-  }, [filterKey, lat, lng])
 
   const mutation = useMutation({
     mutationFn: () =>
       api.recommend({ lat, lng, batteryPercent: battery, connectorType: connector }),
-    onSuccess: (data) => setResults(data.recommendations),
   })
+
+  const { reset, isPending, isError, isSuccess, data, error } = mutation
+
+  useEffect(() => {
+    reset()
+  }, [filterKey, lat, lng, reset])
+
+  const results = data?.recommendations ?? []
 
   return (
     <motion.div
@@ -75,12 +77,26 @@ export function RecommendPanel({
 
         <button
           onClick={() => mutation.mutate()}
-          disabled={mutation.isPending}
+          disabled={isPending}
           className="w-full rounded-xl bg-gradient-to-r from-ev-green to-ev-cyan py-3 text-sm font-bold text-ev-dark transition hover:opacity-90 disabled:opacity-50"
         >
-          {mutation.isPending ? 'Analyzing network...' : 'Find Best Charger'}
+          {isPending ? 'Analyzing network...' : 'Find Best Charger'}
         </button>
       </div>
+
+      {isError && (
+        <p className="mt-3 rounded-lg border border-ev-red/30 bg-ev-red/10 px-3 py-2 text-sm text-ev-red">
+          {error instanceof Error
+            ? error.message
+            : 'Could not load recommendations. Is the API running?'}
+        </p>
+      )}
+
+      {isSuccess && results.length === 0 && (
+        <p className="mt-3 text-sm text-slate-400">
+          No available chargers matched your location and connector. Try another connector type or city.
+        </p>
+      )}
 
       {results.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 space-y-2">

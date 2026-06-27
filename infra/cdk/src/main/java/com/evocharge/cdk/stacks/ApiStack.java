@@ -3,7 +3,6 @@ package com.evocharge.cdk.stacks;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
-import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.ecs.ContainerImage;
 import software.amazon.awscdk.services.ecs.LogDrivers;
@@ -31,10 +30,6 @@ public class ApiStack extends Stack {
                     NetworkStack network, DataStack data) {
         super(scope, id, props);
 
-        Repository ecrRepo = Repository.Builder.create(this, "ApiRepo")
-                .repositoryName("evocharge-api")
-                .build();
-
         Cluster cluster = Cluster.Builder.create(this, "Cluster")
                 .vpc(network.getVpc())
                 .build();
@@ -43,15 +38,17 @@ public class ApiStack extends Stack {
                 .retention(RetentionDays.ONE_WEEK)
                 .build();
 
+        // Image is built locally and pushed to ECR before this stack deploys (see scripts/deploy-cdk-api.ps1).
         fargateService = ApplicationLoadBalancedFargateService.Builder.create(this, "ApiService")
                 .cluster(cluster)
                 .cpu(512)
                 .memoryLimitMiB(1024)
                 .desiredCount(1)
                 .publicLoadBalancer(true)
+                .healthCheckGracePeriod(Duration.seconds(300))
                 .taskImageOptions(
                         software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions.builder()
-                                .image(ContainerImage.fromRegistry("public.ecr.aws/docker/library/eclipse-temurin:21-jre-alpine"))
+                                .image(ContainerImage.fromEcrRepository(data.getApiRepository(), "latest"))
                                 .containerPort(8080)
                                 .environment(Map.of(
                                         "SPRING_PROFILES_ACTIVE", "aws",
@@ -80,6 +77,7 @@ public class ApiStack extends Stack {
         data.getOperatorsTable().grantReadWriteData(fargateService.getTaskDefinition().getTaskRole());
         data.getStationsTable().grantReadWriteData(fargateService.getTaskDefinition().getTaskRole());
         data.getDataBucket().grantRead(fargateService.getTaskDefinition().getTaskRole());
+        data.getApiRepository().grantPull(fargateService.getTaskDefinition().getExecutionRole());
 
         fargateService.getTaskDefinition().getTaskRole().addToPrincipalPolicy(
                 PolicyStatement.Builder.create()
@@ -123,7 +121,7 @@ public class ApiStack extends Stack {
                 .value("http://" + fargateService.getLoadBalancer().getLoadBalancerDnsName())
                 .build();
         software.amazon.awscdk.CfnOutput.Builder.create(this, "EcrRepoUri")
-                .value(ecrRepo.getRepositoryUri())
+                .value(data.getApiRepository().getRepositoryUri())
                 .build();
     }
 

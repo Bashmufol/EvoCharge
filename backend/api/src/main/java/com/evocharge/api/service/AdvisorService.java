@@ -39,6 +39,12 @@ public class AdvisorService {
     }
 
     public AdvisorResponse advise(AdvisorRequest request) {
+        if (request.getQuery() == null || request.getQuery().isBlank()) {
+            AdvisorResponse response = new AdvisorResponse();
+            response.setAnswer("Please enter a question about EV charging in Nigeria.");
+            return response;
+        }
+
         RecommendRequest rec = new RecommendRequest();
         rec.setLat(request.getLat());
         rec.setLng(request.getLng());

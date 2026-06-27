@@ -15,6 +15,7 @@ import software.amazon.awscdk.services.cloudfront.FunctionEventType;
 import software.amazon.awscdk.services.cloudfront.FunctionRuntime;
 import software.amazon.awscdk.services.cloudfront.OriginRequestPolicy;
 import software.amazon.awscdk.services.cloudfront.ViewerProtocolPolicy;
+import software.amazon.awscdk.services.cloudfront.OriginProtocolPolicy;
 import software.amazon.awscdk.services.cloudfront.origins.HttpOrigin;
 import software.amazon.awscdk.services.cloudfront.origins.S3Origin;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
@@ -39,6 +40,7 @@ public class WebStack extends Stack {
                 .build();
 
         HttpOrigin apiOrigin = HttpOrigin.Builder.create(apiDns)
+                .protocolPolicy(OriginProtocolPolicy.HTTP_ONLY)
                 .originPath("")
                 .build();
 

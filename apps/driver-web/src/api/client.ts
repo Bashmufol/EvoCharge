@@ -7,16 +7,19 @@ import type {
   StationStatus,
 } from '../types'
 
-const API_URL =
-  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
+// Prefer same-origin /api (Vite proxy in dev, CloudFront in prod). Set VITE_API_URL only when needed.
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   })
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
-  return res.json()
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(detail.trim() || `Request failed (${res.status})`)
+  }
+  return res.json() as Promise<T>
 }
 
 export const api = {
