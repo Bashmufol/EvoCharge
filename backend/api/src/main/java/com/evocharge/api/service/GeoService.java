@@ -2,6 +2,7 @@ package com.evocharge.api.service;
 
 import org.springframework.stereotype.Service;
 
+/** Haversine distance, radius checks, and simple drive-time estimates. */
 @Service
 public class GeoService {
 

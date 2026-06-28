@@ -8,6 +8,7 @@ import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
 
+/** Wires the four stacks and synthesizes the CDK app. */
 public class EvoChargeCdkApp {
 
     public static void main(String[] args) {

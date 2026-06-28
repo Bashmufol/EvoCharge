@@ -4,7 +4,7 @@ REST API and AWS infrastructure for EvoCharge, a charging intelligence platform 
 
 ## Overview
 
-EvoCharge sits between operator data sources and client applications. It stores operators and stations in DynamoDB (production) or local seed files (development), serves a versioned HTTP API, and runs on AWS using infrastructure defined in CDK.
+EvoCharge sits between operator data sources and client applications. Locally it loads seed JSON into in-memory stores. In AWS it uses DynamoDB tables defined in CDK.
 
 Seed data includes 48 stations across Lagos, Abuja, and Port Harcourt, representing three operator profiles: EVNetwork NG, ChargePro Africa, and VoltLane.
 
@@ -29,21 +29,20 @@ Full endpoint reference: [docs/api-contract.md](docs/api-contract.md).
 | API | Java 21, Spring Boot 4.0.6 |
 | Infrastructure | AWS CDK (Java) |
 | Compute | Amazon ECS on Fargate, Application Load Balancer |
-| Data | Amazon DynamoDB, Amazon S3 (seed and data files) |
+| Data | Amazon DynamoDB, Amazon S3 |
 | AI | Amazon Bedrock |
 | Events | Amazon EventBridge, AWS Lambda |
 | Networking | Amazon VPC, NAT Gateway |
-| Registry and logs | Amazon ECR, Amazon CloudWatch Logs |
-| Edge (optional) | Amazon CloudFront (API path proxy via Web stack) |
+| Edge | Amazon CloudFront (API path proxy via Web stack) |
 
 ## Project Structure
 
 ```
 EvoCharge/
 ├── backend/api/       # Spring Boot application
-├── infra/cdk/         # AWS CDK stacks
+├── infra/cdk/         # AWS CDK stacks (Network, Data, Api, Web)
 ├── data/seed/         # Operator and station seed JSON
-├── scripts/           # API deployment helpers
+├── apps/              # Driver and operator frontends (separate packages)
 └── docs/              # API contract and architecture notes
 ```
 
@@ -83,92 +82,61 @@ Key settings in `backend/api/src/main/resources/application.properties`:
 | `evocharge.bedrock.model-id` | `anthropic.claude-haiku-4-5-20251001-v1:0` |
 | `evocharge.bedrock.enabled` | `true` |
 | `evocharge.mistral.enabled` | `true` |
-| `evocharge.mistral.api-key` | Set via `MISTRAL_API_KEY` locally or `EVOCHARGE_MISTRAL_API_KEY` on ECS |
-| `evocharge.seed.resync-on-startup` | `false` (set `EVOCHARGE_SEED_RESYNC=true` once to reload seed data) |
+| `evocharge.mistral.api-key` | Set via `MISTRAL_API_KEY` environment variable |
+| `evocharge.seed.resync-on-startup` | `false` |
 
-Production uses the `aws` Spring profile (`application-aws.properties`) with DynamoDB table names and settings supplied by ECS environment variables.
+Set `MISTRAL_API_KEY` for the AI advisor Mistral fallback. Bedrock calls require AWS credentials with `bedrock:InvokeModel` when `evocharge.bedrock.enabled=true`.
 
-## AWS Infrastructure
+Production uses the `aws` Spring profile (`application-aws.properties`) with DynamoDB table names supplied by ECS environment variables.
 
-Infrastructure is split into four CDK stacks:
+### API base URL (local)
+
+```
+http://localhost:8080/api/v1
+```
+
+Example health check:
+
+```bash
+curl http://localhost:8080/api/v1/health
+```
+
+## AWS Infrastructure (CDK)
+
+Infrastructure is split into four stacks:
 
 | Stack | Purpose |
 |-------|---------|
 | `EvoCharge-Network` | VPC, public and private subnets across two AZs, NAT Gateway |
-| `EvoCharge-Data` | DynamoDB tables (`EvoCharge-Operators`, `EvoCharge-Stations`), S3 data bucket |
-| `EvoCharge-Api` | ECR repository, ECS Fargate service, ALB, EventBridge rule, Lambda pulse function, CloudWatch log group |
-| `EvoCharge-Web` | CloudFront distribution and S3 bucket for edge delivery (includes `/api/*` proxy to the ALB) |
+| `EvoCharge-Data` | DynamoDB tables, S3 data bucket, ECR repository |
+| `EvoCharge-Api` | ECS Fargate service, ALB, EventBridge pulse rule, CloudWatch logs |
+| `EvoCharge-Web` | CloudFront distribution and S3 bucket; `/api/*` proxies to the ALB |
 
-### Deploy infrastructure
+### Synthesize and deploy
 
 ```bash
 cd infra/cdk
 mvn package
+cdk synth
 cdk deploy --all
 ```
 
-Note the `ApiUrl` output from the Api stack (ALB DNS name). Health check path: `/api/v1/health`.
+Before deploying `EvoCharge-Api`, build and push the API image to the ECR repository created by `EvoCharge-Data`:
 
-The Api stack builds the Docker image during `cdk deploy` (requires **Docker Desktop running**). It no longer uses a placeholder JRE image, so ECS health checks pass on first deploy.
-
-**Recommended deploy (avoids CDK Docker build hangs on Windows):**
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-cdk-api.ps1 -MistralApiKey "your-key"
-```
-
-This will: update `EvoCharge-Data` (ECR repo) → push API image → deploy `EvoCharge-Api` + `EvoCharge-Web` → roll out ECS env vars → deploy frontends.
-
-If `EvoCharge-Api` is stuck in `CREATE_IN_PROGRESS`, delete that stack in CloudFormation and redeploy after pulling these changes.
-
-### Deploy the API container
-
-After CDK creates the ECR repository and ECS service, build and push the application image:
-
-**PowerShell (repository root):**
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-api.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-api.ps1 -MistralApiKey "your-key" -ResyncSeed
-```
-
-### Deploy the frontends
-
-Builds driver + operator apps, syncs to S3, and invalidates CloudFront:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\deploy-web.ps1
-```
-
-### Full reset and redeploy (tear down everything, then rebuild)
-
-**Warning:** destroys CloudFront, ECS, DynamoDB tables, S3 buckets, and VPC. CloudFront deletion can take 15–30 minutes.
-
-```powershell
-# Nuclear option: destroy all stacks, redeploy infra + API + frontends
-powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-all.ps1 -Teardown -MistralApiKey "your-key" -ResyncSeed
-
-# Lighter option: keep Network/Data, redeploy Api + Web + app images (omit -SkipCdk:$false)
-powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-all.ps1 -SkipTeardown -MistralApiKey "your-key"
-```
-
-After seed resync, deploy API again **without** `-ResyncSeed` so restarts do not overwrite DynamoDB.
-
-**Manual API steps:**
-
-```powershell
+```bash
+# From repository root
 docker build -f backend/api/Dockerfile -t evocharge-api:latest .
 
-aws ecr get-login-password --region us-east-1 `
+aws ecr get-login-password --region us-east-1 \
   | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
 
 docker tag evocharge-api:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/evocharge-api:latest
 docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/evocharge-api:latest
 ```
 
-Register a new ECS task definition revision with the pushed image, then update the service with **Force new deployment**.
+Health check path: `/api/v1/health`. The Web stack serves frontends from S3 and routes API traffic to the ALB over HTTP (`OriginProtocolPolicy.HTTP_ONLY`).
 
-Environment variables set by CDK on the Api stack:
+Environment variables set on the ECS task by CDK:
 
 | Variable | Purpose |
 |----------|---------|
@@ -177,33 +145,10 @@ Environment variables set by CDK on the Api stack:
 | `EVOCHARGE_DYNAMODB_OPERATORS_TABLE` | Operators table name |
 | `EVOCHARGE_DYNAMODB_STATIONS_TABLE` | Stations table name |
 | `EVOCHARGE_BEDROCK_ENABLED` | `true` |
-| `EVOCHARGE_BEDROCK_MODEL_ID` | `anthropic.claude-haiku-4-5-20251001-v1:0` |
+| `EVOCHARGE_BEDROCK_MODEL_ID` | Bedrock model ID |
 | `EVOCHARGE_MISTRAL_ENABLED` | `true` |
-| `EVOCHARGE_MISTRAL_API_KEY` | Your Mistral API key (set in ECS task definition or Secrets Manager) |
-| `EVOCHARGE_SEED_RESYNC` | `true` for one deployment to reload updated seed stations |
 
-### IAM permissions (task role)
-
-The ECS task role grants access to:
-
-- Read/write on the DynamoDB operator and station tables
-- Read on the S3 data bucket
-- `bedrock:InvokeModel`
-- Amazon Location Service actions used by the API
-
-## API Base URLs
-
-| Environment | Base URL |
-|-------------|----------|
-| Local | `http://localhost:8080/api/v1` |
-| Production (ALB) | `http://<alb-dns-name>/api/v1` |
-| Production (CloudFront) | `https://<distribution-domain>/api/v1` |
-
-Example health check:
-
-```bash
-curl https://<your-domain>/api/v1/health
-```
+Set `EVOCHARGE_MISTRAL_API_KEY` on the task definition for advisor Mistral fallback. Set `EVOCHARGE_SEED_RESYNC=true` for one deployment to reload seed data into DynamoDB.
 
 ## Documentation
 
@@ -211,8 +156,6 @@ curl https://<your-domain>/api/v1/health
 |----------|-------------|
 | [docs/api-contract.md](docs/api-contract.md) | REST API contract and schemas |
 | [docs/architecture.md](docs/architecture.md) | AWS architecture and data flow |
-| [docs/sow.md](docs/sow.md) | Statement of Work |
-| [docs/sow.pdf](docs/sow.pdf) | Statement of Work (PDF) |
 
 ## License
 

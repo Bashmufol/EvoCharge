@@ -22,6 +22,7 @@ import software.constructs.Construct;
 import java.util.List;
 import java.util.Map;
 
+/** ECS Fargate service behind an ALB, plus a scheduled Lambda that pings the API. */
 public class ApiStack extends Stack {
 
     private final ApplicationLoadBalancedFargateService fargateService;
@@ -38,7 +39,7 @@ public class ApiStack extends Stack {
                 .retention(RetentionDays.ONE_WEEK)
                 .build();
 
-        // Image is built locally and pushed to ECR before this stack deploys (see scripts/deploy-cdk-api.ps1).
+        // Container image must exist in ECR before deploy (tag: latest).
         fargateService = ApplicationLoadBalancedFargateService.Builder.create(this, "ApiService")
                 .cluster(cluster)
                 .cpu(512)

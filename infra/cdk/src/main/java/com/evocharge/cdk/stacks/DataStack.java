@@ -12,6 +12,7 @@ import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.constructs.Construct;
 
+/** DynamoDB tables, S3 data bucket, and ECR repository for the API image. */
 public class DataStack extends Stack {
 
     private final Table operatorsTable;

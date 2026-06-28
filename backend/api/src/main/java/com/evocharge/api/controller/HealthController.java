@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/** ALB health check and service metadata. */
 @RestController
 @RequestMapping("/api/v1")
 public class HealthController {

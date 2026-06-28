@@ -14,6 +14,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Optional;
 
+/** HTTP client for the Mistral chat API, used as a Bedrock fallback for advisor answers. */
 @Component
 public class MistralAdvisorClient {
 

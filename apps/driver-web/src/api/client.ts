@@ -7,19 +7,29 @@ import type {
   StationStatus,
 } from '../types'
 
-// Prefer same-origin /api (Vite proxy in dev, CloudFront in prod). Set VITE_API_URL only when needed.
-const API_URL = import.meta.env.VITE_API_URL ?? ''
+// Production always uses same-origin /api (CloudFront → ALB). Never bake localhost into prod bundles.
+const API_URL = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_URL ?? '')
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   })
+  const body = await res.text()
   if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    throw new Error(detail.trim() || `Request failed (${res.status})`)
+    throw new Error(body.trim() || `Request failed (${res.status})`)
   }
-  return res.json() as Promise<T>
+  const contentType = res.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json') && !contentType.includes('+json')) {
+    const preview = body.trimStart().slice(0, 40)
+    if (preview.startsWith('<!') || preview.startsWith('<html')) {
+      throw new Error('API returned HTML instead of JSON. Check CloudFront /api routing and CORS on the API.')
+    }
+    throw new Error(`Expected JSON but got ${contentType || 'unknown content type'}`)
+  }
+  return JSON.parse(body) as T
 }
 
 export const api = {

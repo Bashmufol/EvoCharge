@@ -2,6 +2,7 @@ package com.evocharge.api.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/** Binds {@code evocharge.*} settings from application properties and environment variables. */
 @ConfigurationProperties(prefix = "evocharge")
 public class EvoChargeProperties {
 

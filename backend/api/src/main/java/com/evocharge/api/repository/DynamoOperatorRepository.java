@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/** DynamoDB-backed operator store for the {@code aws} Spring profile. */
 @Repository
 @ConditionalOnProperty(name = "evocharge.storage", havingValue = "dynamodb")
 public class DynamoOperatorRepository implements OperatorRepository {

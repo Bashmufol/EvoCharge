@@ -86,6 +86,10 @@ export default function App() {
     total: stations.length,
   }), [stations])
 
+  const liveLabel = statusFilter
+    ? `${stations.length} ${statusFilter.toLowerCase()}`
+    : `${stats.available}/${stats.total} live`
+
   const recommendFilterKey = `${cityFilter}|${statusFilter}|${operatorFilter}|${search}`
 
   const handleNearMe = () => {
@@ -155,7 +159,7 @@ export default function App() {
             </a>
             <div className="flex items-center gap-2 rounded-full bg-ev-green/10 px-3 py-1.5 text-xs">
               <Activity className="h-3.5 w-3.5 text-ev-green" />
-              <span className="text-ev-green">{stats.available}/{stats.total} live</span>
+              <span className="text-ev-green">{liveLabel}</span>
             </div>
           </div>
         </div>

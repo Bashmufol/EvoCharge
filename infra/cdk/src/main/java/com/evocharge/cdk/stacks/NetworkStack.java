@@ -7,6 +7,7 @@ import software.amazon.awscdk.services.ec2.SubnetType;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.constructs.Construct;
 
+/** VPC with public and private subnets across two availability zones. */
 public class NetworkStack extends Stack {
 
     private final Vpc vpc;

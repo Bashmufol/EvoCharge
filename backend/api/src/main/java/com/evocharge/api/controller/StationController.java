@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Station list, detail, nearby search, and city filters. */
 @RestController
 @RequestMapping("/api/v1/stations")
 public class StationController {

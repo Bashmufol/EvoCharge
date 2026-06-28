@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
+/** Natural-language charging advisor. Tries Bedrock, then Mistral, then a template fallback. */
 @Service
 public class AdvisorService {
 

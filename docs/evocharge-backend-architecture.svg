@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #0f2b46; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #375a7f; }
+      .label { font: 600 16px 'Segoe UI', Arial, sans-serif; fill: #12324d; }
+      .small { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #264b6b; }
+      .box { rx: 14; ry: 14; stroke: #9bb7d0; stroke-width: 2; }
+      .group { rx: 16; ry: 16; fill: #f7fbff; stroke: #b8ccde; stroke-width: 2; stroke-dasharray: 6 5; }
+      .arrow { stroke: #436b8f; stroke-width: 3; fill: none; marker-end: url(#arrowHead); }
+    </style>
+    <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#436b8f" />
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff" />
+  <text x="60" y="68" class="title">EvoCharge Backend Architecture</text>
+  <text x="60" y="98" class="subtitle">Spring Boot API on AWS with managed data, eventing, and AI services</text>
+
+  <rect x="60" y="130" width="1480" height="720" class="group" />
+  <text x="84" y="158" class="label">AWS Cloud</text>
+
+  <rect x="90" y="180" width="470" height="220" class="group" />
+  <text x="108" y="208" class="label">Edge and Ingress</text>
+
+  <rect x="120" y="230" width="180" height="90" class="box" fill="#f6f9fd"/>
+  <text x="144" y="267" class="label">CloudFront</text>
+  <text x="146" y="288" class="small">/api/* path</text>
+
+  <rect x="340" y="230" width="190" height="90" class="box" fill="#f6f9fd"/>
+  <text x="366" y="267" class="label">ALB</text>
+  <text x="360" y="288" class="small">Health checks</text>
+
+  <rect x="90" y="430" width="890" height="390" class="group" />
+  <text x="108" y="458" class="label">VPC (2 AZ)</text>
+  <text x="108" y="480" class="small">Public subnets for ALB, private workloads for API tasks</text>
+
+  <rect x="130" y="520" width="250" height="100" class="box" fill="#eef6ff"/>
+  <text x="176" y="560" class="label">Amazon ECR</text>
+  <text x="152" y="582" class="small">Container registry</text>
+
+  <rect x="430" y="520" width="300" height="120" class="box" fill="#e8f4ff"/>
+  <text x="486" y="560" class="label">ECS Fargate</text>
+  <text x="470" y="582" class="small">Spring Boot API</text>
+  <text x="466" y="604" class="small">/api/v1 endpoints</text>
+
+  <rect x="790" y="520" width="160" height="120" class="box" fill="#f8fbff"/>
+  <text x="820" y="560" class="label">NAT</text>
+  <text x="804" y="582" class="small">Gateway</text>
+
+  <rect x="1050" y="180" width="460" height="300" class="group" />
+  <text x="1070" y="208" class="label">Data and Intelligence Services</text>
+
+  <rect x="1080" y="240" width="190" height="90" class="box" fill="#eff8f2"/>
+  <text x="1114" y="274" class="label">DynamoDB</text>
+  <text x="1103" y="296" class="small">Operators table</text>
+
+  <rect x="1300" y="240" width="180" height="90" class="box" fill="#eff8f2"/>
+  <text x="1334" y="274" class="label">DynamoDB</text>
+  <text x="1324" y="296" class="small">Stations table</text>
+
+  <rect x="1080" y="360" width="190" height="90" class="box" fill="#fff7eb"/>
+  <text x="1138" y="395" class="label">S3</text>
+  <text x="1102" y="417" class="small">Seed data bucket</text>
+
+  <rect x="1300" y="360" width="180" height="90" class="box" fill="#f1edff"/>
+  <text x="1337" y="395" class="label">Bedrock</text>
+  <text x="1310" y="417" class="small">Claude Haiku 4.5</text>
+
+  <rect x="1050" y="520" width="460" height="300" class="group" />
+  <text x="1070" y="548" class="label">Events and Operations</text>
+
+  <rect x="1080" y="580" width="190" height="90" class="box" fill="#edf9ff"/>
+  <text x="1122" y="615" class="label">EventBridge</text>
+  <text x="1106" y="637" class="small">2 min schedule</text>
+
+  <rect x="1300" y="580" width="180" height="90" class="box" fill="#edf9ff"/>
+  <text x="1350" y="615" class="label">Lambda</text>
+  <text x="1320" y="637" class="small">NetworkPulseFn</text>
+
+  <rect x="1190" y="700" width="220" height="90" class="box" fill="#f5f7fb"/>
+  <text x="1236" y="735" class="label">CloudWatch</text>
+  <text x="1266" y="757" class="small">Logs</text>
+
+  <path d="M300 275 L340 275" class="arrow" />
+  <path d="M435 320 L560 520" class="arrow" />
+  <path d="M380 570 L430 570" class="arrow" />
+  <path d="M730 560 L1080 285" class="arrow" />
+  <path d="M730 585 L1300 285" class="arrow" />
+  <path d="M730 610 L1080 405" class="arrow" />
+  <path d="M730 630 L1300 405" class="arrow" />
+  <path d="M730 640 L790 610" class="arrow" />
+  <path d="M1270 625 L1300 625" class="arrow" />
+  <path d="M1300 670 L1200 700" class="arrow" />
+  <path d="M560 640 L1190 730" class="arrow" />
+
+  <rect x="120" y="720" width="820" height="90" class="box" fill="#fafcff"/>
+  <text x="148" y="754" class="small">Key runtime path: CloudFront /api/* → ALB → ECS API → DynamoDB / Bedrock / S3</text>
+  <text x="148" y="778" class="small">Operational path: EventBridge → Lambda pulse → API, with logs in CloudWatch</text>
+</svg>

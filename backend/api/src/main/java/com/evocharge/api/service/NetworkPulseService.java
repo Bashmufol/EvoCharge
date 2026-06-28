@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/** Simulates live station status changes and broadcasts them over SSE. */
 @Service
 public class NetworkPulseService {
 
@@ -66,7 +67,8 @@ public class NetworkPulseService {
         return switch (current) {
             case AVAILABLE -> random.nextBoolean() ? StationStatus.BUSY : StationStatus.AVAILABLE;
             case BUSY -> random.nextBoolean() ? StationStatus.AVAILABLE : StationStatus.BUSY;
-            case OFFLINE -> random.nextInt(3) == 0 ? StationStatus.AVAILABLE : StationStatus.OFFLINE;
+            // Keep seeded offline stations offline so map filters stay meaningful in demos.
+            case OFFLINE -> StationStatus.OFFLINE;
         };
     }
 

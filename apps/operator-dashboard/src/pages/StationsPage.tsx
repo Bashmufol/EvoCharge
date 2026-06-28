@@ -12,7 +12,7 @@ const statusStyle: Record<StationStatus, string> = {
 
 export function StationsPage() {
   const queryClient = useQueryClient()
-  const { data: stations = [], isLoading } = useQuery({
+  const { data: stations = [], isLoading, isError, error } = useQuery({
     queryKey: ['stations'],
     queryFn: api.getStations,
     refetchInterval: 30_000,
@@ -31,6 +31,12 @@ export function StationsPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <h1 className="text-xl font-bold text-white sm:text-2xl">Station Management</h1>
       <p className="mb-6 text-sm text-slate-400">Live status across all aggregated operators</p>
+
+      {isError && (
+        <p className="mb-4 rounded-lg border border-ev-red/30 bg-ev-red/10 px-3 py-2 text-sm text-ev-red">
+          {error instanceof Error ? error.message : 'Could not load stations from the API.'}
+        </p>
+      )}
 
       <div className="overflow-hidden rounded-2xl border border-white/5 bg-ev-card">
         <div className="overflow-x-auto">

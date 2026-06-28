@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/** Network KPIs and per-area demand scores for the operator dashboard. */
 @Service
 public class AnalyticsService {
 

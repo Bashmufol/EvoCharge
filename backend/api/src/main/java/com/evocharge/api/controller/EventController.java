@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+/** Server-sent events stream for live station status updates. */
 @RestController
 @RequestMapping("/api/v1/events")
 public class EventController {

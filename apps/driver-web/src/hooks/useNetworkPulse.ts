@@ -11,14 +11,17 @@ export function useNetworkPulse() {
 
     es.addEventListener('status', (event) => {
       const data: StatusEvent = JSON.parse(event.data)
-      queryClient.setQueryData<Station[]>(['stations'], (old) => {
-        if (!old) return old
-        return old.map((s) =>
-          s.id === data.stationId
-            ? { ...s, status: data.status, waitMinutes: data.waitMinutes, lastUpdated: data.timestamp }
-            : s
-        )
-      })
+      queryClient.setQueriesData<Station[]>(
+        { queryKey: ['stations'] },
+        (old) => {
+          if (!old) return old
+          return old.map((s) =>
+            s.id === data.stationId
+              ? { ...s, status: data.status, waitMinutes: data.waitMinutes, lastUpdated: data.timestamp }
+              : s
+          )
+        }
+      )
     })
 
     return () => es.close()

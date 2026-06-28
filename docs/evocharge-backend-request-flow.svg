@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #0f2b46; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #375a7f; }
+      .label { font: 600 16px 'Segoe UI', Arial, sans-serif; fill: #12324d; }
+      .small { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #264b6b; }
+      .step { rx: 14; ry: 14; fill: #f7fbff; stroke: #9bb7d0; stroke-width: 2; }
+      .note { rx: 12; ry: 12; fill: #f9fbfd; stroke: #c3d3e2; stroke-width: 2; }
+      .arrow { stroke: #436b8f; stroke-width: 3; fill: none; marker-end: url(#arrowHead2); }
+      .num { font: 700 18px 'Segoe UI', Arial, sans-serif; fill: #0f2b46; }
+    </style>
+    <marker id="arrowHead2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#436b8f" />
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"/>
+  <text x="60" y="68" class="title">EvoCharge API Request and Data Flow</text>
+  <text x="60" y="98" class="subtitle">Runtime execution path for REST, advisor, analytics, and live pulse events</text>
+
+  <rect x="80" y="150" width="220" height="90" class="step"/>
+  <text x="96" y="182" class="num">1</text>
+  <text x="122" y="183" class="label">API Client</text>
+  <text x="122" y="206" class="small">Request /api/v1/*</text>
+
+  <rect x="350" y="150" width="220" height="90" class="step"/>
+  <text x="366" y="182" class="num">2</text>
+  <text x="390" y="183" class="label">CloudFront</text>
+  <text x="390" y="206" class="small">Route /api/*</text>
+
+  <rect x="620" y="150" width="220" height="90" class="step"/>
+  <text x="636" y="182" class="num">3</text>
+  <text x="668" y="183" class="label">ALB</text>
+  <text x="664" y="206" class="small">Healthy target</text>
+
+  <rect x="890" y="150" width="280" height="120" class="step"/>
+  <text x="906" y="182" class="num">4</text>
+  <text x="934" y="183" class="label">ECS Fargate API</text>
+  <text x="934" y="206" class="small">Spring Boot controllers</text>
+  <text x="934" y="228" class="small">Service and repository layers</text>
+
+  <rect x="1240" y="130" width="280" height="120" class="step"/>
+  <text x="1256" y="162" class="num">5</text>
+  <text x="1286" y="163" class="label">DynamoDB</text>
+  <text x="1286" y="186" class="small">Operators + Stations</text>
+  <text x="1286" y="208" class="small">Primary system of record</text>
+
+  <rect x="1240" y="300" width="280" height="120" class="step"/>
+  <text x="1256" y="332" class="num">6</text>
+  <text x="1286" y="333" class="label">Bedrock Advisor Path</text>
+  <text x="1286" y="356" class="small">Invoke Claude Haiku 4.5</text>
+  <text x="1286" y="378" class="small">Merge with ranked stations</text>
+
+  <rect x="1240" y="470" width="280" height="120" class="step"/>
+  <text x="1256" y="502" class="num">7</text>
+  <text x="1286" y="503" class="label">S3 Seed Data</text>
+  <text x="1286" y="526" class="small">Bootstrap load for local</text>
+  <text x="1286" y="548" class="small">and first-run scenarios</text>
+
+  <rect x="890" y="470" width="280" height="120" class="step"/>
+  <text x="906" y="502" class="num">8</text>
+  <text x="934" y="503" class="label">API Response</text>
+  <text x="934" y="526" class="small">JSON payload to client</text>
+  <text x="934" y="548" class="small">or SSE stream event</text>
+
+  <rect x="350" y="650" width="220" height="90" class="step"/>
+  <text x="366" y="682" class="num">9</text>
+  <text x="392" y="683" class="label">EventBridge</text>
+  <text x="392" y="706" class="small">Scheduled pulse</text>
+
+  <rect x="620" y="650" width="220" height="90" class="step"/>
+  <text x="636" y="682" class="num">10</text>
+  <text x="666" y="683" class="label">Lambda</text>
+  <text x="666" y="706" class="small">Pulse trigger</text>
+
+  <rect x="890" y="650" width="280" height="90" class="step"/>
+  <text x="906" y="682" class="num">11</text>
+  <text x="936" y="683" class="label">CloudWatch Logs</text>
+  <text x="936" y="706" class="small">API and Lambda logs</text>
+
+  <path d="M300 195 L350 195" class="arrow"/>
+  <path d="M570 195 L620 195" class="arrow"/>
+  <path d="M840 195 L890 195" class="arrow"/>
+  <path d="M1170 195 L1240 195" class="arrow"/>
+  <path d="M1170 215 L1240 350" class="arrow"/>
+  <path d="M1170 235 L1240 520" class="arrow"/>
+  <path d="M890 530 L840 530 L840 240" class="arrow"/>
+  <path d="M840 240 L300 240 L300 195" class="arrow"/>
+
+  <path d="M570 695 L620 695" class="arrow"/>
+  <path d="M840 695 L890 695" class="arrow"/>
+  <path d="M730 650 L1030 270" class="arrow"/>
+  <path d="M1030 590 L1030 650" class="arrow"/>
+
+  <rect x="80" y="790" width="1440" height="80" class="note"/>
+  <text x="110" y="825" class="small">Observability and reliability: ALB health checks, ECS task logs in CloudWatch, and scheduled pulse verification through EventBridge and Lambda.</text>
+  <text x="110" y="848" class="small">Advisor path calls Bedrock only for /advisor requests. Core discovery endpoints remain fast and deterministic through DynamoDB reads.</text>
+</svg>

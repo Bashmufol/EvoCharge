@@ -8,8 +8,15 @@ import { KpiCard } from '../components/KpiCard'
 const STATUS_COLORS = ['#00e676', '#ffb300', '#ff5252']
 
 export function DashboardPage() {
-  const { data: summary } = useQuery({ queryKey: ['summary'], queryFn: api.getSummary, refetchInterval: 30_000 })
-  const { data: demand = [] } = useQuery({ queryKey: ['demand'], queryFn: api.getDemandByArea })
+  const { data: summary, isError: summaryError, error: summaryErr } = useQuery({
+    queryKey: ['summary'],
+    queryFn: api.getSummary,
+    refetchInterval: 30_000,
+  })
+  const { data: demand = [], isError: demandError, error: demandErr } = useQuery({
+    queryKey: ['demand'],
+    queryFn: api.getDemandByArea,
+  })
 
   const statusData = summary
     ? [
@@ -31,6 +38,14 @@ export function DashboardPage() {
         <h1 className="text-xl font-bold text-white sm:text-2xl">Network Overview</h1>
         <p className="text-sm text-slate-400">Multi-operator charging intelligence across Lagos</p>
       </div>
+
+      {(summaryError || demandError) && (
+        <p className="rounded-lg border border-ev-red/30 bg-ev-red/10 px-3 py-2 text-sm text-ev-red">
+          {(summaryErr ?? demandErr) instanceof Error
+            ? (summaryErr ?? demandErr)!.message
+            : 'Could not load dashboard data from the API.'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard title="Total Stations" value={summary?.totalStations ?? '—'} icon={Zap} />

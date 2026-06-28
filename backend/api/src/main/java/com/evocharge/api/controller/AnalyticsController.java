@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Network summary KPIs and demand-by-area aggregates. */
 @RestController
 @RequestMapping("/api/v1/analytics")
 public class AnalyticsController {

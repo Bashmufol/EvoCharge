@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+/** Loads operator and station seed JSON on startup when storage is empty or resync is enabled. */
 @Component
 public class DataSeeder {
 

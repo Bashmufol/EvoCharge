@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Ranks stations by distance, availability, wait time, reliability, and connector match. */
 @Service
 public class EvoScoreService {
 
@@ -66,7 +67,7 @@ public class EvoScoreService {
     }
 
     private String buildReason(Station s, double dist, int eta) {
-        return String.format("%s — %.1f km away, ~%d min drive, %d min wait, %d%% reliable",
+        return String.format("%s - %.1f km away, ~%d min drive, %d min wait, %d%% reliable",
                 s.getStatus() == StationStatus.AVAILABLE ? "Available now" : "Busy but viable",
                 dist, eta, s.getWaitMinutes(), s.getReliabilityScore());
     }

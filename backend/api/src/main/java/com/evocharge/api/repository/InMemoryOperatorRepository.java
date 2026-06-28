@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/** In-process operator store used for local development (default). */
 @Repository
 @ConditionalOnProperty(name = "evocharge.storage", havingValue = "local", matchIfMissing = true)
 public class InMemoryOperatorRepository implements OperatorRepository {

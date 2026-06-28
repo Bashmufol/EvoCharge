@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** Natural-language charging advisor endpoint. */
 @RestController
 @RequestMapping("/api/v1/advisor")
 public class AdvisorController {

@@ -1,6 +1,5 @@
 package com.evocharge.cdk.stacks;
 
-import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
@@ -26,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/** CloudFront distribution: static apps on S3, API requests proxied to the ALB over HTTP. */
 public class WebStack extends Stack {
 
     public WebStack(Construct scope, String id, StackProps props, ApiStack api) {
@@ -93,24 +93,11 @@ public class WebStack extends Stack {
         additionalBehaviors.put("/api/*", apiBehavior);
         additionalBehaviors.put("/operator/*", operatorBehavior);
 
+        // API paths return JSON; SPA error-page rules are not applied to /api/*.
         Distribution webCdn = Distribution.Builder.create(this, "WebCdn")
                 .defaultBehavior(driverBehavior)
                 .additionalBehaviors(additionalBehaviors)
                 .defaultRootObject("index.html")
-                .errorResponses(List.of(
-                        software.amazon.awscdk.services.cloudfront.ErrorResponse.builder()
-                                .httpStatus(404)
-                                .responseHttpStatus(200)
-                                .responsePagePath("/index.html")
-                                .ttl(Duration.minutes(5))
-                                .build(),
-                        software.amazon.awscdk.services.cloudfront.ErrorResponse.builder()
-                                .httpStatus(403)
-                                .responseHttpStatus(200)
-                                .responsePagePath("/index.html")
-                                .ttl(Duration.minutes(5))
-                                .build()
-                ))
                 .build();
 
         String webUrl = "https://" + webCdn.getDistributionDomainName();
@@ -124,7 +111,7 @@ public class WebStack extends Stack {
                 .build();
         software.amazon.awscdk.CfnOutput.Builder.create(this, "DriverWebUrl")
                 .value(webUrl)
-                .description("Same as WebUrl — driver app served at /")
+                .description("Same as WebUrl - driver app served at /")
                 .build();
         software.amazon.awscdk.CfnOutput.Builder.create(this, "OperatorWebUrl")
                 .value(webUrl + "/operator/")

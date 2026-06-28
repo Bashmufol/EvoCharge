@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Lists charging network operators. */
 @RestController
 @RequestMapping("/api/v1/operators")
 public class OperatorController {
